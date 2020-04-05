@@ -1,4 +1,7 @@
-﻿using Dapper.Conventions.Samples.Interfaces;
+﻿using Autofac;
+using Dapper.Conventions.Interfaces;
+using Dapper.Conventions.Samples.Interfaces;
+using Dapper.Conventions.Samples.Services.Queries;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,9 +15,11 @@ namespace Dapper.Conventions.Samples
     public class Application : IApplication
     {
         IOrderQueries orderQueries;
+        IComponentContext ctx;
 
-        public Application(IOrderQueries orderQueries)
+        public Application(IOrderQueries orderQueries, IComponentContext ctx)
         {
+            this.ctx = ctx;
             this.orderQueries = orderQueries;
         }
 
@@ -37,6 +42,19 @@ namespace Dapper.Conventions.Samples
             Console.WriteLine("GET Single Id 2");
             var orderDetailSingle = orderQueries.GetSingle(2);
             Console.WriteLine($"ID {orderDetailSingle.Id}, description {orderDetailSingle.Description}, price {orderDetailSingle.Price} hasdiscount {orderDetailSingle.HasDiscount}");
+
+           
+
+
+            var instance1 = ctx.Resolve<IConventionsLookup<OrderQueriesWithConventions>>();
+            var instance2 = ctx.Resolve<IConventionsLookup<OrderQueriesWithConventions>>();
+
+            var instance3 = ctx.Resolve<IConventionsLookup<OrderQueriesWithConventionsAnother>>();
+            var instance4 = ctx.Resolve<IConventionsLookup<OrderQueriesWithConventionsAnother>>();
+
+
+
+
         }
     }
 }
