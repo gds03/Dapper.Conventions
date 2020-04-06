@@ -23,12 +23,23 @@ namespace Dapper.Conventions.Samples.Services.Queries
 
         public IEnumerable<OrderDetails> GetComplexFiltered(string partOfDetails)
         {
-            throw new NotImplementedException();
+            var sql = @"SELECT * FROM OrderDetails
+                        where price > 200";
+
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                return connection.Query<OrderDetails>(sql);
+            }
         }
 
         public OrderDetails GetSingle(int id)
         {
-            throw new NotImplementedException();
+            var sql = @"SELECT * FROM OrderDetails where Id = @Id";
+
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                return connection.QuerySingle<OrderDetails>(sql);
+            }
         }
     }
 }

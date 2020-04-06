@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
+﻿using System.Collections.Generic;
 using Dapper.Conventions.Samples.Interfaces;
 using Dapper.Conventions.Attributes;
 using Dapper.Conventions.Interfaces;
@@ -11,39 +9,26 @@ namespace Dapper.Conventions.Samples.Services.Queries
     [UseConventions("Query/Orders")]
     public class OrderQueriesWithConventions : IOrderQueries
     {
-        const string ConnectionString = "Data Source=localhost,1433;Initial Catalog=Test;User Id=sa;Password=Summer2020";
+        private IQueryExecutor<OrderQueriesWithConventions> conventionsQuery;
 
-        private IConventionsLookup<OrderQueriesWithConventions> conventionsLookup;
-
-        public OrderQueriesWithConventions(IConventionsLookup<OrderQueriesWithConventions> conventionsLookup)
+        public OrderQueriesWithConventions(IQueryExecutor<OrderQueriesWithConventions> conventionsQuery)
         {
-            this.conventionsLookup = conventionsLookup;
+            this.conventionsQuery = conventionsQuery;
         }
 
 
-        public IEnumerable<OrderDetails> GetAll()
-        {
-            using (var connection = new SqlConnection(ConnectionString))
-            {
-                return connection.Query<OrderDetails>(conventionsLookup.GetQuery());
-            }
-        }
+        public IEnumerable<OrderDetails> GetAll() => 
+            conventionsQuery.Run((sql, conn) => conn.Query<OrderDetails>(sql)
+        );
+
 
         [OverrideConventions("GetHigherThan200")]
-        public IEnumerable<OrderDetails> GetComplexFiltered(string partOfDetails)
-        {
-            using (var connection = new SqlConnection(ConnectionString))
-            {
-                return connection.Query<OrderDetails>(conventionsLookup.GetQuery());
-            }
-        }
+        public IEnumerable<OrderDetails> GetComplexFiltered(string partOfDetails) =>
+            conventionsQuery.Run((sql, conn) => conn.Query<OrderDetails>(sql)
+        );
 
-        public OrderDetails GetSingle(int id)
-        {
-            using (var connection = new SqlConnection(ConnectionString))
-            {
-                return connection.QuerySingle<OrderDetails>(conventionsLookup.GetQuery(), new { Id = id });
-            }
-        }
+        public OrderDetails GetSingle(int id) => 
+            conventionsQuery.Run((sql, conn) => conn.QuerySingle<OrderDetails>(sql, new { Id = id })
+        );
     }
 }

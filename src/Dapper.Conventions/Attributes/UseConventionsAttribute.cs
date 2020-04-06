@@ -7,6 +7,11 @@ namespace Dapper.Conventions.Attributes
     {
         public string SubFolder { get; }
 
+        public UseConventionsAttribute()
+        {
+
+        }
+
         public UseConventionsAttribute(string subFolder)
         {
             this.SubFolder = subFolder ?? throw new ArgumentNullException(nameof(subFolder));

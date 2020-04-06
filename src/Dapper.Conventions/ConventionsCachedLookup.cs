@@ -13,31 +13,34 @@ namespace Dapper.Conventions
     public class ConventionsCachedLookup<T> : IConventionsLookup<T>
     {
         private readonly string directoryName;
-        private readonly Dictionary<string, string> methodNameToFileContentsMap; 
-        private readonly IDbFileExtension dbFileExtension;
+        private readonly string fileExtensions;
+        private readonly Dictionary<string, string> methodNameToFileContentsMap;         
 
-
-        public ConventionsCachedLookup(string baseDirectory, IDbFileExtension dbFileExtension)
+        public ConventionsCachedLookup(string baseDirectory, string fileExtensions)
         {
+            var conventionAttribute = typeof(T).GetCustomAttribute<UseConventionsAttribute>();
+            if (conventionAttribute == null)
+            {
+                throw new InvalidOperationException($"To use this service please Mark {typeof(T).Name} class with {typeof(UseConventionsAttribute).Name} attribute");
+            }
+
             if (string.IsNullOrEmpty(baseDirectory))
             {
                 throw new ArgumentException(nameof(baseDirectory));
             }
 
-            this.dbFileExtension = dbFileExtension ?? throw new ArgumentNullException(nameof(dbFileExtension));            
-            
-            var conventionAttribute = typeof(T).GetCustomAttribute<UseConventionsAttribute>();
-            if(conventionAttribute == null)
+            if (string.IsNullOrEmpty(fileExtensions))
             {
-                throw new InvalidOperationException($"To use this service please Mark {typeof(T).Name} class with {typeof(UseConventionsAttribute).Name} attribute");
-            }
+                throw new ArgumentException(nameof(fileExtensions));
+            }            
 
             var folder = conventionAttribute.SubFolder ?? typeof(T).Name;
-            directoryName = Path.Combine(baseDirectory.Replace("/", "\\"), folder.Replace("/", "\\"));
+            this.fileExtensions = fileExtensions;
+            this.directoryName = Path.Combine(baseDirectory.Replace("/", "\\"), folder.Replace("/", "\\"));
 
             if (!Directory.Exists(directoryName))
             {
-                throw new InvalidOperationException($"Directory {directoryName} does not exists");
+                throw new DirectoryNotFoundException($"Directory {directoryName} does not exists");
             }
 
             methodNameToFileContentsMap = MapFiles();
@@ -102,9 +105,9 @@ namespace Dapper.Conventions
                 return ex;
             }
         }
-       
-        
-        private string GetFilePath(string name) => Path.Combine(directoryName, name) + dbFileExtension.Extension;
+
+
+        private string GetFilePath(string name) => Path.ChangeExtension(Path.Combine(directoryName, name), fileExtensions);
 
     }
 }

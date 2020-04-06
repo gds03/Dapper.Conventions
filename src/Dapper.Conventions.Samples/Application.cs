@@ -39,20 +39,9 @@ namespace Dapper.Conventions.Samples
                 Console.WriteLine($"ID {orderDetail2.Id}, description {orderDetail2.Description}, price {orderDetail2.Price} hasdiscount {orderDetail2.HasDiscount}");
             }
 
-            Console.WriteLine("GET Single Id 2");
-            var orderDetailSingle = orderQueries.GetSingle(2);
+            Console.WriteLine("GET Single Id 3");
+            var orderDetailSingle = orderQueries.GetSingle(3);
             Console.WriteLine($"ID {orderDetailSingle.Id}, description {orderDetailSingle.Description}, price {orderDetailSingle.Price} hasdiscount {orderDetailSingle.HasDiscount}");
-
-           
-
-
-            var instance1 = ctx.Resolve<IConventionsLookup<OrderQueriesWithConventions>>();
-            var instance2 = ctx.Resolve<IConventionsLookup<OrderQueriesWithConventions>>();
-
-            var instance3 = ctx.Resolve<IConventionsLookup<OrderQueriesWithConventionsAnother>>();
-            var instance4 = ctx.Resolve<IConventionsLookup<OrderQueriesWithConventionsAnother>>();
-
-
 
 
         }
