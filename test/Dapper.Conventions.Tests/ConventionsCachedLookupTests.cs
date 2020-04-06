@@ -58,27 +58,31 @@ namespace Dapper.Conventions.Tests
         }
 
         [Test]
-        public void ConventionsCachedLookup_Ctor_SuccessfullyMaps()
+        public void ConventionsCachedLookup_Ctor_Throws_AggregateExceptionWithArgumentExceptionAndFileNotFound_When_MethodNameAreEqualAndFileNotExists()
         {
             // arrage & act
             var directory = "Scripts";
-            var extensions = "sql";  
-            var queries = new OrderQueries(new ConventionsCachedLookup<OrderQueries>(directory, extensions));
+            var extensions = "sql";
 
-            
-            // assert - check all methods
-            var sqlGetAll = queries.GetAll();
-            sqlGetAll.Should().Be("GetAllContents");
+            // arrage
+            Action sut = () => new ConventionsCachedLookup<OrderQuerieUnsucessfullyWithSameMethodNames>(directory, extensions);
 
-            var sqlGetOne = queries.GetOne();
-            sqlGetOne.Should().Be("AnotherNameContents");
-
-            var sqlPaginated = queries.GetPaginated();
-            sqlPaginated.Should().Be("GetPaginatedContents");
+            // act & assert
+            sut.Should().Throw<AggregateException>()
+                .And
+                .InnerExceptions
+                .Should()
+                .HaveCount(2)
+                .And
+                .ContainSingle(ex => ex.GetType() == typeof(ArgumentException) && ((ArgumentException) ex).Message.Contains("GetBy"))
+                .And
+                .ContainSingle(ex => ex.GetType() == typeof(FileNotFoundException) && ((FileNotFoundException)ex).Message.Contains("AnotherName2"));
+                
         }
 
+
         [Test]
-        public void ConventionsCachedLookup_Ctor_ThrowsAggregateException_When_Files_NotPresent()
+        public void ConventionsCachedLookup_Ctor_ThrowsAggregateExceptionWithFileNotFound_When_Files_NotPresent()
         {
             // arrage & act
             var directory = "Scripts";
@@ -89,16 +93,36 @@ namespace Dapper.Conventions.Tests
             // assert - check all methods
             var notFoundFiles = new[] { "GetPaginated", "AnotherName" };
 
-            sut.Should()
-                .Throw<AggregateException>()
-                .Where(
-                    ag => ag.InnerExceptions.Count == 2     // 2 files dont exists.
-                )
-                .And.InnerExceptions
-                .All(
-                    i => i.Message.Contains("**Could not find file**") && 
-                    notFoundFiles.Any(fileName => i.Message.Contains(fileName))
-            );
+            sut.Should().Throw<AggregateException>()
+               .And
+               .InnerExceptions
+               .Should()
+               .HaveCount(2)
+               .And
+               .ContainItemsAssignableTo<FileNotFoundException>()
+               .And
+               .Contain(ex => notFoundFiles.Any(file => ex.Message.Contains(file)));
+        }
+
+
+
+        [Test]
+        public void ConventionsCachedLookup_Ctor_SuccessfullyMaps()
+        {
+            // arrage & act
+            var directory = "Scripts";
+            var extensions = "sql";
+            var sut = new ConventionsCachedLookup<OrderQueries>(directory, extensions);
+
+            // assert - check all methods
+            var sqlGetAll = sut.GetQuery(nameof(OrderQueries.GetAll));
+            sqlGetAll.Should().Be("GetAllContents");
+
+            var sqlGetOne = sut.GetQuery(nameof(OrderQueries.GetOne));
+            sqlGetOne.Should().Be("AnotherNameContents");
+
+            var sqlPaginated = sut.GetQuery(nameof(OrderQueries.GetPaginated));
+            sqlPaginated.Should().Be("GetPaginatedContents");
         }
 
 
@@ -108,17 +132,39 @@ namespace Dapper.Conventions.Tests
             // arrage & act
             var directory = "Scripts";
             var extensions = "sql";
-            var queries = new OrderQueriesSuccessButWithoutNaming(new ConventionsCachedLookup<OrderQueriesSuccessButWithoutNaming>(directory, extensions));
+            var sut = new ConventionsCachedLookup<OrderQueriesSuccessButWithoutNaming>(directory, extensions);
 
 
             // assert - check all methods
-            var sqlGetJustOne = queries.GetJustOne();
+            var sqlGetJustOne = sut.GetQuery(nameof(OrderQueriesSuccessButWithoutNaming.GetJustOne));
             sqlGetJustOne.Should().Be("GetJustOneContents");
 
-            var sqlGetOne = queries.GetOne();
+            var sqlGetOne = sut.GetQuery(nameof(OrderQueriesSuccessButWithoutNaming.GetOne));
             sqlGetOne.Should().Be("AnotherName2Contents");
 
-            var sqlTemp = queries.Temp();
+            var sqlTemp = sut.GetQuery(nameof(OrderQueriesSuccessButWithoutNaming.Temp));
+            sqlTemp.Should().Be("TempContents");
+        }
+
+
+        [Test]
+        public void ConventionsCachedLookup_GetQueryWithCompilerServices()
+        {
+            // arrage & act
+            var directory = "Scripts";
+            var extensions = "sql";
+            var sut = new ConventionsCachedLookup<OrderQueriesSuccessButWithoutNaming>(directory, extensions);
+            var orders = new OrderQueriesSuccessButWithoutNaming(sut);
+
+
+            // assert - check all methods
+            var sqlGetJustOne = orders.GetJustOne();
+            sqlGetJustOne.Should().Be("GetJustOneContents");
+
+            var sqlGetOne = orders.GetOne();
+            sqlGetOne.Should().Be("AnotherName2Contents");
+
+            var sqlTemp = orders.Temp();
             sqlTemp.Should().Be("TempContents");
         }
     }
@@ -126,11 +172,11 @@ namespace Dapper.Conventions.Tests
 
     public class OrderQueriesWithoutAnnotation
     {
-        private IConventionsLookup<OrderQueriesWithoutAnnotation> conventionsQuery;
+        private IConventionsLookup<OrderQueriesWithoutAnnotation> convetions;
 
         public OrderQueriesWithoutAnnotation(IConventionsLookup<OrderQueriesWithoutAnnotation> conventionsQuery)
         {
-            this.conventionsQuery = conventionsQuery;
+            this.convetions = conventionsQuery;
         }
 
 
@@ -141,20 +187,20 @@ namespace Dapper.Conventions.Tests
     [UseConventions("SuccessFolder/Orders")]
     public class OrderQueries
     {
-        private IConventionsLookup<OrderQueries> conventionsQuery;
+        private IConventionsLookup<OrderQueries> convetions;
 
         public OrderQueries(IConventionsLookup<OrderQueries> conventionsQuery)
         {
-            this.conventionsQuery = conventionsQuery;
+            this.convetions = conventionsQuery;
         }
 
 
-        public string GetAll() => conventionsQuery.GetQuery();
+        public string GetAll() => convetions.GetQuery();
 
         [OverrideConventions("AnotherName")]
-        public string GetOne() => conventionsQuery.GetQuery();
+        public string GetOne() => convetions.GetQuery();
 
-        public string GetPaginated() => conventionsQuery.GetQuery();
+        public string GetPaginated() => convetions.GetQuery();
     }
 
 
@@ -164,20 +210,20 @@ namespace Dapper.Conventions.Tests
     [UseConventions("NotSuccessFolder1/Orders")]
     public class OrderQueriesNotSuccess
     {
-        private IConventionsLookup<OrderQueriesNotSuccess> conventionsQuery;
+        private IConventionsLookup<OrderQueriesNotSuccess> convetions;
 
         public OrderQueriesNotSuccess(IConventionsLookup<OrderQueriesNotSuccess> conventionsQuery)
         {
-            this.conventionsQuery = conventionsQuery;
+            this.convetions = conventionsQuery;
         }
 
 
-        public string GetAllDifferent() => conventionsQuery.GetQuery();
+        public string GetAllDifferent() => convetions.GetQuery();
 
         [OverrideConventions("AnotherName")]
-        public string GetOne() => conventionsQuery.GetQuery();
+        public string GetOne() => convetions.GetQuery();
 
-        public string GetPaginated() => conventionsQuery.GetQuery();
+        public string GetPaginated() => convetions.GetQuery();
     }
 
 
@@ -187,20 +233,39 @@ namespace Dapper.Conventions.Tests
     [UseConventions]
     public class OrderQueriesSuccessButWithoutNaming
     {
-        private IConventionsLookup<OrderQueriesSuccessButWithoutNaming> conventionsQuery;
+        private IConventionsLookup<OrderQueriesSuccessButWithoutNaming> convetions;
 
         public OrderQueriesSuccessButWithoutNaming(IConventionsLookup<OrderQueriesSuccessButWithoutNaming> conventionsQuery)
         {
-            this.conventionsQuery = conventionsQuery;
+            this.convetions = conventionsQuery;
         }
 
 
-        public string GetJustOne() => conventionsQuery.GetQuery();
+        public string GetJustOne() => convetions.GetQuery();
 
         [OverrideConventions("AnotherName2")]
-        public string GetOne() => conventionsQuery.GetQuery();
+        public string GetOne() => convetions.GetQuery();
 
-        public string Temp() => conventionsQuery.GetQuery();
+        public string Temp() => convetions.GetQuery();
+    }
+
+    [UseConventions]
+    public class OrderQuerieUnsucessfullyWithSameMethodNames
+    {
+        private IConventionsLookup<OrderQuerieUnsucessfullyWithSameMethodNames> convetions;
+
+        public OrderQuerieUnsucessfullyWithSameMethodNames(IConventionsLookup<OrderQuerieUnsucessfullyWithSameMethodNames> conventionsQuery)
+        {
+            this.convetions = conventionsQuery;
+        }
+
+        // instead call GetOneById
+        public string GetBy(int id) => convetions.GetQuery(); 
+
+        public string GetBy(string name) => convetions.GetQuery();
+
+        [OverrideConventions("AnotherName2")]
+        public string GetOne() => convetions.GetQuery();
     }
 
 

@@ -23,6 +23,9 @@
     <None Update="Scripts\NotSuccessFolder1\Orders\GetAllDifferent.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Scripts\OrderQuerieUnsucessfullyWithSameMethodNames\GetBy.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Scripts\OrderQueriesSuccessButWithoutNaming\GetJustOne.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

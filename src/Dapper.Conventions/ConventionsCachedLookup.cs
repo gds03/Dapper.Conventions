@@ -62,7 +62,7 @@ namespace Dapper.Conventions
         private Dictionary<string, string> MapFiles()
         {
             var mapping = new Dictionary<string, string>();            
-            var fileExceptions = new List<Exception>();
+            var exceptionsList = new List<Exception>();
 
             foreach (var method in typeof(T).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             {
@@ -76,20 +76,38 @@ namespace Dapper.Conventions
                 var fileException = GetFileContentsForMethod(GetFilePath(value), out var fileContents);
                 if(fileException != null)
                 {
-                    fileExceptions.Add(fileException);
+                    exceptionsList.Add(fileException);
                 }
                 else
                 {
-                    mapping.Add(method.Name, fileContents);
+                    if(!TryAdd(mapping, method.Name, fileContents, out Exception exception))
+                    {
+                        exceptionsList.Add(exception);
+                    }
                 }                
             }
 
-            if(fileExceptions.Any())
+            if(exceptionsList.Any())
             {
-                throw new AggregateException(fileExceptions);
+                throw new AggregateException(exceptionsList);
             }
             
             return mapping;
+        }
+
+        private bool TryAdd(Dictionary<string, string> mapping, string key, string fileContents, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                mapping.Add(key, fileContents);
+                return true;
+            }
+            catch(Exception ex)
+            {
+                exception = ex;
+                return false;
+            }
         }
 
         private Exception GetFileContentsForMethod(string finalFilePath, out string fileContents)
