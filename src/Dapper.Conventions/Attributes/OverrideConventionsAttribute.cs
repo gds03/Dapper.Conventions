@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Dapper.Conventions.Attributes
 {
@@ -9,7 +10,18 @@ namespace Dapper.Conventions.Attributes
 
         public OverrideConventionsAttribute(string fileName)
         {
-            this.FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
+            if (string.IsNullOrEmpty(fileName))
+            {
+                throw new ArgumentException(nameof(fileName));
+            }
+
+            fileName = fileName.Trim();
+            if (fileName.ToCharArray().Any(c => char.IsWhiteSpace(c)))
+            {
+                throw new InvalidOperationException($"subFolder parameter can't contain spaces.");
+            }
+
+            this.FileName = fileName;
         }
     }
 }

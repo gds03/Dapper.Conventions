@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Dapper.Conventions.Attributes
 {
@@ -14,7 +15,18 @@ namespace Dapper.Conventions.Attributes
 
         public UseConventionsAttribute(string subFolder)
         {
-            this.SubFolder = subFolder ?? throw new ArgumentNullException(nameof(subFolder));
+            if(string.IsNullOrEmpty(subFolder))
+            {
+                throw new ArgumentException(nameof(subFolder));
+            }
+
+            subFolder = subFolder.Trim();
+            if(subFolder.ToCharArray().Any(c => char.IsWhiteSpace(c)))
+            {
+                throw new InvalidOperationException($"subFolder parameter can't contain spaces.");
+            }
+
+            this.SubFolder = subFolder;
         }
     }
 }
