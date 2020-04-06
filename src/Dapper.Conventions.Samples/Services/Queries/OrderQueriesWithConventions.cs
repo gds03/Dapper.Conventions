@@ -10,16 +10,16 @@ namespace Dapper.Conventions.Samples.Services.Queries
     [UseConventions("Query/Orders")]
     public class OrderQueriesWithConventions : IOrderQueries
     {
-        private IQueryExecutor<OrderQueriesWithConventions> conventionsQuery;
+        private IQueryExecutor<OrderQueriesWithConventions> conventions;
 
-        public OrderQueriesWithConventions(IQueryExecutor<OrderQueriesWithConventions> conventionsQuery)
+        public OrderQueriesWithConventions(IQueryExecutor<OrderQueriesWithConventions> conventions)
         {
-            this.conventionsQuery = conventionsQuery;
+            this.conventions = conventions;
         }
 
 
         public IEnumerable<OrderDetails> GetAll() =>
-            conventionsQuery._(sql =>
+            conventions._(sql =>
             {
                 using (var conn = new SqlConnection())
                 {
@@ -30,9 +30,9 @@ namespace Dapper.Conventions.Samples.Services.Queries
 
         [OverrideConventions("GetHigherThan200")]
         public IEnumerable<OrderDetails> GetComplexFiltered(string partOfDetails) =>
-            conventionsQuery._((sql, conn) => conn.Query<OrderDetails>(sql));
+            conventions._((sql, conn) => conn.Query<OrderDetails>(sql));
 
         public OrderDetails GetSingle(int id) => 
-            conventionsQuery._((sql, conn) => conn.QuerySingle<OrderDetails>(sql, new { Id = id }));
+            conventions._((sql, conn) => conn.QuerySingle<OrderDetails>(sql, new { Id = id }));
     }
 }
