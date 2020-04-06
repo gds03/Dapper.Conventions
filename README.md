@@ -44,7 +44,7 @@ When you inject the parameter into the class is when the mapping is done and is 
 
 To Register the following Services if you are using AutoFac you can register with the following calls:
 
-```
+```csharp
 class AutofacModule : Module
     {
         const string ConnectionString = "your_CS";
