@@ -18,16 +18,24 @@ public class OrderQueriesWithConventions : IOrderQueries
 
 
     public IEnumerable<OrderDetails> GetAll() => 
-        conventionsQuery.Run((sql, conn) => conn.Query<OrderDetails>(sql)
+        conventionsQuery.Run((sql, conn) => conn.Query<OrderDetails>(sql)   // a
     );
 
 
     [OverrideConventions("GetHigherThan200")]
     public IEnumerable<OrderDetails> GetComplexFiltered(string partOfDetails) =>
-        conventionsQuery.Run((sql, conn) => conn.Query<OrderDetails>(sql)
+        conventionsQuery.Run((sql, conn) => conn.Query<OrderDetails>(sql)    // b
     );
 
     public OrderDetails GetSingle(int id) => 
-        conventionsQuery.Run((sql, conn) => conn.QuerySingle<OrderDetails>(sql, new { Id = id })
+        conventionsQuery.Run((sql, conn) => conn.QuerySingle<OrderDetails>(sql, new { Id = id })   // c
     );
 }
+```
+
+This will lookup in the Query\Orders folder for a file for each method that queries. 
+At a) it will get the default name of Get all -> a file with the path: Query\Orders\Getall.sql will be grabed 
+At b) it will get the overwritten name of GetComplexFiltered which is GetHigherThan200 -> a file with the path: Query\Orders\GetHigherThan200.sql will be grabed 
+At c) it will get the default name of GetSingle -> a file with path: Query\Orders\GetSingle.sql will be grabed
+
+When you inject the parameter into the class is when the mapping is done and only once because each IQueryExecutor<T> is a Singleton.
