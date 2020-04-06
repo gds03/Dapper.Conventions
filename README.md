@@ -7,30 +7,33 @@ Example usage:
 ```csharp
 
 [UseConventions("Query/Orders")]
-public class OrderQueriesWithConventions : IOrderQueries
-{
-    private IQueryExecutor<OrderQueriesWithConventions> conventionsQuery;
-
-    public OrderQueriesWithConventions(IQueryExecutor<OrderQueriesWithConventions> conventionsQuery)
+    public class OrderQueriesWithConventions : IOrderQueries
     {
-        this.conventionsQuery = conventionsQuery;
+        private IQueryExecutor<OrderQueriesWithConventions> conventions;
+
+        public OrderQueriesWithConventions(IQueryExecutor<OrderQueriesWithConventions> conventions)
+        {
+            this.conventions = conventions;
+        }
+
+
+        public IEnumerable<OrderDetails> GetAll() =>    //a
+            conventions._(sql =>
+            {
+                using (var conn = new SqlConnection())
+                {
+                    return conn.Query<OrderDetails>(sql);
+                }
+            }); 
+
+
+        [OverrideConventions("GetHigherThan200")]
+        public IEnumerable<OrderDetails> GetComplexFiltered(string partOfDetails) => //b
+            conventions._((sql, conn) => conn.Query<OrderDetails>(sql));
+
+        public OrderDetails GetSingle(int id) => 
+            conventions._((sql, conn) => conn.QuerySingle<OrderDetails>(sql, new { Id = id })); //c
     }
-
-
-    public IEnumerable<OrderDetails> GetAll() => 
-        conventionsQuery.Run((sql, conn) => conn.Query<OrderDetails>(sql)   // a
-    );
-
-
-    [OverrideConventions("GetHigherThan200")]
-    public IEnumerable<OrderDetails> GetComplexFiltered(string partOfDetails) =>
-        conventionsQuery.Run((sql, conn) => conn.Query<OrderDetails>(sql)    // b
-    );
-
-    public OrderDetails GetSingle(int id) => 
-        conventionsQuery.Run((sql, conn) => conn.QuerySingle<OrderDetails>(sql, new { Id = id })   // c
-    );
-}
 ```
 
 This will lookup in the Query\Orders folder for a file for each method that queries. 
