@@ -46,37 +46,32 @@ To Register the following Services if you are using AutoFac you can register wit
 
 ```csharp
 class AutofacModule : Module
+{
+    const string ConnectionString = "your_CS";
+
+    protected override void Load(ContainerBuilder builder)
     {
-        const string ConnectionString = "your_CS";
+        builder.RegisterGeneric(typeof(ConventionsCachedLookup<>)).AsImplementedInterfaces()
+             .WithParameter(
+                    (pi, ctx) => pi.Name == "baseDirectory",
+                    (pi, ctx) => "SQLScripts"
+                ) 
+            .WithParameter(
+                    (pi, ctx) => pi.Name == "fileExtensions",
+                    (pi, ctx) => "sql"
+                )
 
-        protected override void Load(ContainerBuilder builder)
-        {
-           
-            //builder.RegisterType<OrderQueriesWithConventionsAnother>().AsSelf();
-            builder.RegisterType<Application>().AsImplementedInterfaces();
-            builder.RegisterType<OrderQueriesWithConventions>().AsImplementedInterfaces();            
+             .SingleInstance();
 
-            builder.RegisterGeneric(typeof(ConventionsCachedLookup<>)).AsImplementedInterfaces()
-                 .WithParameter(
-                        (pi, ctx) => pi.Name == "baseDirectory",
-                        (pi, ctx) => "SQLScripts"
-                    ) 
-                .WithParameter(
-                        (pi, ctx) => pi.Name == "fileExtensions",
-                        (pi, ctx) => "sql"
-                    )
-
-                 .SingleInstance();
-
-            builder.RegisterGeneric(typeof(QueryExecutor<>)).AsImplementedInterfaces()
-                 .WithParameter(
-                        (pi, ctx) => pi.ParameterType == typeof(Func<IDbConnection>),
-                        (pi, ctx) => { Func<IDbConnection> factory = () => new SqlConnection(ConnectionString); return factory; }
-                    )
-                 .SingleInstance();
-
-        }
+        builder.RegisterGeneric(typeof(QueryExecutor<>)).AsImplementedInterfaces()
+             .WithParameter(
+                    (pi, ctx) => pi.ParameterType == typeof(Func<IDbConnection>),
+                    (pi, ctx) => { Func<IDbConnection> factory = () => new SqlConnection(ConnectionString); return factory; }
+                )
+             .SingleInstance();
 
     }
+
+}
 
 ```
