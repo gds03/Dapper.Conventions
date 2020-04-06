@@ -21,13 +21,13 @@ namespace Dapper.Conventions
             
         }
 
-        public T Run<T>(Func<string, T> callback, [CallerMemberName] string methodName = null)
+        public T _<T>(Func<string, T> callback, [CallerMemberName] string methodName = null)
         {
             var sql = conventionsLookup.GetQuery(methodName);
             return callback(sql);
         }
 
-        public T Run<T>(Func<string, IDbConnection, T> callback, [CallerMemberName] string methodName = null)
+        public T _<T>(Func<string, IDbConnection, T> callback, [CallerMemberName] string methodName = null)
         {
             if(dbConnectionFactory == null)
             {
@@ -36,7 +36,7 @@ namespace Dapper.Conventions
 
             using (var dbConnection = dbConnectionFactory())
             {
-                return this.Run(sql => callback(sql, dbConnection), methodName);
+                return this._(sql => callback(sql, dbConnection), methodName);
             }
         }
     }

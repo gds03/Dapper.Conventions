@@ -49,7 +49,7 @@ namespace Dapper.Conventions.Tests
             var sut = new QueryExecutor<object>(fakeConventionsLookup);
 
             // act
-            var result = sut.Run(sql => sql);
+            var result = sut._(sql => sql);
 
             // act & assert
             A.CallTo(() => fakeConventionsLookup.GetQuery(A<string>._))
@@ -66,7 +66,7 @@ namespace Dapper.Conventions.Tests
             var sut = new QueryExecutor<object>(fakeConventionsLookup);
 
             // act
-            Action act = () => sut.Run((sql, connection) => sql);
+            Action act = () => sut._((sql, connection) => sql);
 
             // act & assert
             act.Should().Throw<InvalidOperationException>().WithMessage("**please call the constructor passing a connection factory**");
@@ -88,7 +88,7 @@ namespace Dapper.Conventions.Tests
             var sut = new QueryExecutor<object>(fakeConventionsLookup, () => fakeConnection);
 
             // act
-            var result = sut.Run((sql, connection) => new { sql, connection });
+            var result = sut._((sql, connection) => new { sql, connection });
 
             // act & assert
             A.CallTo(() => fakeConventionsLookup.GetQuery(A<string>._))
