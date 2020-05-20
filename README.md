@@ -9,9 +9,9 @@ Example usage:
 [UseConventions("Query/Orders")]
     public class OrderQueriesWithConventions : IOrderQueries
     {
-        private IQueryExecutor<OrderQueriesWithConventions> conventions;
+        private ICommandExecutor<OrderQueriesWithConventions> conventions;
 
-        public OrderQueriesWithConventions(IQueryExecutor<OrderQueriesWithConventions> conventions)
+        public OrderQueriesWithConventions(ICommandExecutor<OrderQueriesWithConventions> conventions)
         {
             this.conventions = conventions;
         }
@@ -42,7 +42,7 @@ At a) it will get the default name of Get all -> a file with the contents on: Qu
 At b) it will get the overwritten name of GetComplexFiltered which is GetHigherThan200 -> a file with the contents on: Query\Orders\GetHigherThan200.sql will be loaded
 At c) it will get the default name of GetSingle -> a file with the contents on: Query\Orders\GetSingle.sql will be loaded
 
-When you inject the parameter into the class is when the mapping is done and is only done once because each IQueryExecutor<T> is a Singleton.
+When you inject the parameter into the class is when the mapping is done and is only done once because each ICommandExecutor<T> is a Singleton.
 
 
 To Register the following Services if you are using AutoFac you can register with the following calls:
@@ -66,7 +66,7 @@ class AutofacModule : Module
 
              .SingleInstance();
 
-        builder.RegisterGeneric(typeof(QueryExecutor<>)).AsImplementedInterfaces()
+        builder.RegisterGeneric(typeof(ICommandExecutor<>)).AsImplementedInterfaces()
              .WithParameter(
                     (pi, ctx) => pi.ParameterType == typeof(Func<IDbConnection>),
                     (pi, ctx) => { Func<IDbConnection> factory = () => new SqlConnection(ConnectionString); return factory; }
