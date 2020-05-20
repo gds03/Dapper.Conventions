@@ -29,7 +29,7 @@ namespace Dapper.Conventions.Samples
 
                  .SingleInstance();
 
-            builder.RegisterGeneric(typeof(QueryExecutor<>)).AsImplementedInterfaces()
+            builder.RegisterGeneric(typeof(CommandExecutor<>)).AsImplementedInterfaces()
                  .WithParameter(
                         (pi, ctx) => pi.ParameterType == typeof(Func<IDbConnection>),
                         (pi, ctx) => { Func<IDbConnection> factory = () => new SqlConnection(ConnectionString); return factory; }

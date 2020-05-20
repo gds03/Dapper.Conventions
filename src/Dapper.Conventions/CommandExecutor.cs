@@ -5,29 +5,29 @@ using System.Runtime.CompilerServices;
 
 namespace Dapper.Conventions
 {
-    public class QueryExecutor<TUsingConventions> : IQueryExecutor<TUsingConventions>
+    public class CommandExecutor<TUsingConventions> : ICommandExecutor<TUsingConventions>
     {
         private readonly Func<IDbConnection> dbConnectionFactory;
         private readonly IConventionsLookup<TUsingConventions> conventionsLookup;
 
-        public QueryExecutor(IConventionsLookup<TUsingConventions> conventionsLookup)
+        public CommandExecutor(IConventionsLookup<TUsingConventions> conventionsLookup)
         {
             this.conventionsLookup = conventionsLookup ?? throw new ArgumentNullException(nameof(conventionsLookup));
         }
 
-        public QueryExecutor(IConventionsLookup<TUsingConventions> conventionsLookup, Func<IDbConnection> dbConnectionFactory) : this(conventionsLookup)
+        public CommandExecutor(IConventionsLookup<TUsingConventions> conventionsLookup, Func<IDbConnection> dbConnectionFactory) : this(conventionsLookup)
         {
             this.dbConnectionFactory = dbConnectionFactory ?? throw new ArgumentNullException(nameof(dbConnectionFactory));
             
         }
 
-        public T _<T>(Func<string, T> callback, [CallerMemberName] string methodName = null)
+        public T _<T>(Func<string, T> callback, [CallerMemberName] string methodNameOrCommand = null)
         {
-            var sql = conventionsLookup.GetQuery(methodName);
+            var sql = conventionsLookup.GetCommandFor(methodNameOrCommand);
             return callback(sql);
         }
 
-        public T _<T>(Func<string, IDbConnection, T> callback, [CallerMemberName] string methodName = null)
+        public T _<T>(Func<string, IDbConnection, T> callback, [CallerMemberName] string methodNameOrCommand = null)
         {
             if(dbConnectionFactory == null)
             {
@@ -36,7 +36,7 @@ namespace Dapper.Conventions
 
             using (var dbConnection = dbConnectionFactory())
             {
-                return this._(sql => callback(sql, dbConnection), methodName);
+                return this._(sql => callback(sql, dbConnection), methodNameOrCommand);
             }
         }
     }

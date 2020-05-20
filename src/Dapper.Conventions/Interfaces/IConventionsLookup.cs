@@ -4,6 +4,6 @@ namespace Dapper.Conventions.Interfaces
 {
     public interface IConventionsLookup<TUsingConventions>
     {
-        string GetQuery([CallerMemberName] string methodName = null);
+        string GetCommandFor([CallerMemberName] string methodName = null);
     }    
 }

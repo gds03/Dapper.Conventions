@@ -115,13 +115,13 @@ namespace Dapper.Conventions.Tests
             var sut = new ConventionsCachedLookup<OrderQueries>(directory, extensions);
 
             // assert - check all methods
-            var sqlGetAll = sut.GetQuery(nameof(OrderQueries.GetAll));
+            var sqlGetAll = sut.GetCommandFor(nameof(OrderQueries.GetAll));
             sqlGetAll.Should().Be("GetAllContents");
 
-            var sqlGetOne = sut.GetQuery(nameof(OrderQueries.GetOne));
+            var sqlGetOne = sut.GetCommandFor(nameof(OrderQueries.GetOne));
             sqlGetOne.Should().Be("AnotherNameContents");
 
-            var sqlPaginated = sut.GetQuery(nameof(OrderQueries.GetPaginated));
+            var sqlPaginated = sut.GetCommandFor(nameof(OrderQueries.GetPaginated));
             sqlPaginated.Should().Be("GetPaginatedContents");
         }
 
@@ -136,13 +136,13 @@ namespace Dapper.Conventions.Tests
 
 
             // assert - check all methods
-            var sqlGetJustOne = sut.GetQuery(nameof(OrderQueriesSuccessButWithoutNaming.GetJustOne));
+            var sqlGetJustOne = sut.GetCommandFor(nameof(OrderQueriesSuccessButWithoutNaming.GetJustOne));
             sqlGetJustOne.Should().Be("GetJustOneContents");
 
-            var sqlGetOne = sut.GetQuery(nameof(OrderQueriesSuccessButWithoutNaming.GetOne));
+            var sqlGetOne = sut.GetCommandFor(nameof(OrderQueriesSuccessButWithoutNaming.GetOne));
             sqlGetOne.Should().Be("AnotherName2Contents");
 
-            var sqlTemp = sut.GetQuery(nameof(OrderQueriesSuccessButWithoutNaming.Temp));
+            var sqlTemp = sut.GetCommandFor(nameof(OrderQueriesSuccessButWithoutNaming.Temp));
             sqlTemp.Should().Be("TempContents");
         }
 
@@ -195,12 +195,12 @@ namespace Dapper.Conventions.Tests
         }
 
 
-        public string GetAll() => convetions.GetQuery();
+        public string GetAll() => convetions.GetCommandFor();
 
         [OverrideConventions("AnotherName")]
-        public string GetOne() => convetions.GetQuery();
+        public string GetOne() => convetions.GetCommandFor();
 
-        public string GetPaginated() => convetions.GetQuery();
+        public string GetPaginated() => convetions.GetCommandFor();
     }
 
 
@@ -218,12 +218,12 @@ namespace Dapper.Conventions.Tests
         }
 
 
-        public string GetAllDifferent() => convetions.GetQuery();
+        public string GetAllDifferent() => convetions.GetCommandFor();
 
         [OverrideConventions("AnotherName")]
-        public string GetOne() => convetions.GetQuery();
+        public string GetOne() => convetions.GetCommandFor();
 
-        public string GetPaginated() => convetions.GetQuery();
+        public string GetPaginated() => convetions.GetCommandFor();
     }
 
 
@@ -241,12 +241,12 @@ namespace Dapper.Conventions.Tests
         }
 
 
-        public string GetJustOne() => convetions.GetQuery();
+        public string GetJustOne() => convetions.GetCommandFor();
 
         [OverrideConventions("AnotherName2")]
-        public string GetOne() => convetions.GetQuery();
+        public string GetOne() => convetions.GetCommandFor();
 
-        public string Temp() => convetions.GetQuery();
+        public string Temp() => convetions.GetCommandFor();
     }
 
     [UseConventions]
@@ -260,12 +260,12 @@ namespace Dapper.Conventions.Tests
         }
 
         // instead call GetOneById
-        public string GetBy(int id) => convetions.GetQuery(); 
+        public string GetBy(int id) => convetions.GetCommandFor(); 
 
-        public string GetBy(string name) => convetions.GetQuery();
+        public string GetBy(string name) => convetions.GetCommandFor();
 
         [OverrideConventions("AnotherName2")]
-        public string GetOne() => convetions.GetQuery();
+        public string GetOne() => convetions.GetCommandFor();
     }
 
 

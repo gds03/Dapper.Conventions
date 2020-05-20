@@ -18,7 +18,7 @@ namespace Dapper.Conventions.Tests
         public void QueryExecutor_Ctor_Should_ThrowArgumentNullException_When_ConventionsLookupIsNull()
         {
             // arrange
-            Action act = () => new QueryExecutor<object>(null);
+            Action act = () => new CommandExecutor<object>(null);
 
             // act & assert
             act.Should().Throw<ArgumentNullException>().WithMessage("**conventionsLookup**");
@@ -28,7 +28,7 @@ namespace Dapper.Conventions.Tests
         public void QueryExecutor_Ctor_Should_ThrowArgumentNullException_When_DbConnectionFactoryIsNull()
         {
             // arrange
-            Action act = () => new QueryExecutor<object>(A.Fake<IConventionsLookup<object>>(), null);
+            Action act = () => new CommandExecutor<object>(A.Fake<IConventionsLookup<object>>(), null);
 
             // act & assert
             act.Should().Throw<ArgumentNullException>().WithMessage("**dbConnectionFactory**");
@@ -42,17 +42,17 @@ namespace Dapper.Conventions.Tests
             var query = fixture.Create<string>();
             var fakeConventionsLookup = A.Fake<IConventionsLookup<object>>();
             A
-                .CallTo(() => fakeConventionsLookup.GetQuery(A<string>._))
+                .CallTo(() => fakeConventionsLookup.GetCommandFor(A<string>._))
                 .Returns(query);
                 
 
-            var sut = new QueryExecutor<object>(fakeConventionsLookup);
+            var sut = new CommandExecutor<object>(fakeConventionsLookup);
 
             // act
             var result = sut._(sql => sql);
 
             // act & assert
-            A.CallTo(() => fakeConventionsLookup.GetQuery(A<string>._))
+            A.CallTo(() => fakeConventionsLookup.GetCommandFor(A<string>._))
                 .MustHaveHappenedOnceExactly();
             
             result.Should().Be(query);
@@ -63,7 +63,7 @@ namespace Dapper.Conventions.Tests
         {
             // arrange
             var fakeConventionsLookup = A.Fake<IConventionsLookup<object>>();          
-            var sut = new QueryExecutor<object>(fakeConventionsLookup);
+            var sut = new CommandExecutor<object>(fakeConventionsLookup);
 
             // act
             Action act = () => sut._((sql, connection) => sql);
@@ -82,16 +82,16 @@ namespace Dapper.Conventions.Tests
             var query = fixture.Create<string>();
             
             A
-                .CallTo(() => fakeConventionsLookup.GetQuery(A<string>._))
+                .CallTo(() => fakeConventionsLookup.GetCommandFor(A<string>._))
                 .Returns(query);
 
-            var sut = new QueryExecutor<object>(fakeConventionsLookup, () => fakeConnection);
+            var sut = new CommandExecutor<object>(fakeConventionsLookup, () => fakeConnection);
 
             // act
             var result = sut._((sql, connection) => new { sql, connection });
 
             // act & assert
-            A.CallTo(() => fakeConventionsLookup.GetQuery(A<string>._))
+            A.CallTo(() => fakeConventionsLookup.GetCommandFor(A<string>._))
                 .MustHaveHappenedOnceExactly();
 
             A.CallTo(() => fakeConnection.Dispose())

@@ -47,7 +47,7 @@ namespace Dapper.Conventions
         }
 
 
-        public string GetQuery([CallerMemberName] string methodName = null)
+        public string GetCommandFor([CallerMemberName] string methodName = null)
         {
             if( !methodNameToFileContentsMap.TryGetValue(methodName, out var queryValue) )
             {

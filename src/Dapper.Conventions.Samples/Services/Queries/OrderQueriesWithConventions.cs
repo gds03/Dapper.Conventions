@@ -10,9 +10,9 @@ namespace Dapper.Conventions.Samples.Services.Queries
     [UseConventions("Query/Orders")]
     public class OrderQueriesWithConventions : IOrderQueries
     {
-        private IQueryExecutor<OrderQueriesWithConventions> conventions;
+        private ICommandExecutor<OrderQueriesWithConventions> conventions;
 
-        public OrderQueriesWithConventions(IQueryExecutor<OrderQueriesWithConventions> conventions)
+        public OrderQueriesWithConventions(ICommandExecutor<OrderQueriesWithConventions> conventions)
         {
             this.conventions = conventions;
         }
