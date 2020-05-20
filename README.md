@@ -6,7 +6,7 @@ Example usage:
 
 ```csharp
 
-[UseConventions("Query/Orders")]
+    [UseConventions("Query/Orders")]
     public class OrderQueriesWithConventions : IOrderQueries
     {
         private ICommandExecutor<OrderQueriesWithConventions> conventions;
